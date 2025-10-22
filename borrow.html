@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Borrowing Form</title>
+    <link rel="stylesheet" href="style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body class="borrow-page">
+
+    <div class="borrow-page-wrapper">
+        
+        <div class="borrow-card">
+            
+            <div class="card-left">
+                <h3 id="book-title">Đang tải tên sách...</h3>
+            </div>
+            
+            <div class="card-right">
+                <h1>BOOK BORROWING FORM</h1>
+            
+                <form id="borrow-form">
+                    <div>
+                        <label for="member-name">Full name:</label>
+                        <input type="text" id="member-name" name="memberName" placeholder="Enter your full name..." required>
+                    </div>
+                    <div>
+                        <label for="member-id">ID:</label>
+                        <input type="text" id="member-id" name="memberId" placeholder="Enter your student/teacher ID..." required>
+                    </div>
+                    <div>
+                        <label for="member-email">Email:</label>
+                        <input type="text" id="member-email" name="memberEmail" placeholder="Enter your email..." required>
+                    </div>
+
+                    <div>
+                        <label>Member type:</label>
+                        <div class="radio-group">
+                            <input type="radio" id="member-student" name="memberType" value="student" checked>
+                            <label for="member-student">Student</label>
+                            <input type="radio" id="member-teacher" name="memberType" value="teacher">
+                            <label for="member-teacher">Teacher</label>
+                        </div>
+                    </div>
+
+                    <button type="submit">Submit</button>
+                </form>
+
+                <div id="result" style="display:none;"></div>
+
+                <div class="signup-banner">
+                    Already have an account? <a href="#">Log in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('bookId');
+        const bookData = {
+            '101': 'Lập trình C++ Nâng cao',
+            '102': 'Cấu trúc dữ liệu và Giải thuật',
+            '103': 'Thiết kế hệ thống cơ bản',
+            '104': 'OOP với C++',
+            '105': 'Một cuốn sách có tên rất dài',
+            '106': 'Sách 6'
+        };
+        const bookTitleElement = document.getElementById('book-title');
+        
+        const title = bookData[bookId] || 'Sách không xác định';
+        bookTitleElement.textContent = title;
+
+        const borrowForm = document.getElementById('borrow-form');
+        const resultDiv = document.getElementById('result');
+
+        borrowForm.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const memberName = document.getElementById('member-name').value;
+            const memberId = document.getElementById('member-id').value;
+            const memberEmail = document.getElementById('member-email').value;
+            const memberType = document.querySelector('input[name="memberType"]:checked').value;
+            
+            const dataToSend = {
+                bookId: bookId,
+                memberName: memberName,
+                memberId: memberId,
+                memberEmail: memberEmail,
+                memberType: memberType
+            };
+
+            fetch('/borrow-book', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSend)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server Error: ${response.statusText}`);
+                }
+                return response.json(); 
+            })
+            .then(data => {
+                console.log('Server response:', data);
+    
+                if(data.success) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'success result-clean';
+                    const memberTypeText = data.memberType === 'student' ? 'Student' : 'Teacher';
+                    const formattedBorrowFee = new Intl.NumberFormat('vi-VN').format(data.borrowFee);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result-header">
+                            <i class='bx bx-check-circle'></i>
+                            <p class="result-title">SUCCESS! Book Borrowed.</p>
+                        </div>
+                        <div class="result-details">
+                            <p><strong>Member:</strong> ${data.memberName} (${memberTypeText})</p>
+                            <p><strong>Book:</strong> ${bookData[bookId] || 'Unknown Book'}</p>
+                            <hr>
+
+                            <p class="result-due-date">
+                                <strong>DUE DATE: </strong> 
+                                <span class="highlight-date">${data.dueDate}</span> 
+                            </p>
+                            
+                            <p class="fee-line fee-borrow">
+                                <i class='bx bx-coin-stack'></i> 
+                                <strong>Borrow Fee:</strong> 
+                                <span>${formattedBorrowFee} VND</span>
+                            </p>
+                            
+                            <p class="fee-line fee-late">
+                                <i class='bx bx-time-five'></i> 
+                                <strong>Late Fee / Day:</strong> 
+                                <span class="highlight-fee">${data.lateFeeRate} VND</span>
+                            </p>
+                            
+                        </div>
+                        
+                        <button id="home-button" type="button" class="return-button">
+                            <i class='bx bx-home' ></i> Back to Home
+                        </button>
+                    `;
+                    
+                    borrowForm.style.display = 'none';
+
+                    document.getElementById('home-button').addEventListener('click', () => {
+                        window.location.href = '/';
+                    });
+                } else {
+                    throw new Error(data.message || 'Unknown error from server');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>

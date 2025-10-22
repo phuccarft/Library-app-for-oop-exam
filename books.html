@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin Mượn Sách</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h3 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 500px;
+            margin: 20px auto; 
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        form div {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #007BFF;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,123,255,0.25);
+        }
+        button {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+
+        #result.success {
+            background-color: #e9f7ef; 
+            border: 1px solid #28a745;
+            color: #155724; 
+        }
+        #result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb; 
+            color: #721c24; 
+        }
+        
+        #result p {
+            margin: 5px 0;
+            text-align: left;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Thông tin Mượn Sách</h1>
+        
+        <form id="borrow-form">
+            <div>
+                <h3 id="book-title">Đang tải tên sách...</h3>
+            </div>
+            <div>
+                <label for="member-name">Tên của bạn:</label>
+                <input type="text" id="member-name" name="memberName" required>
+            </div>
+            <div>
+                <label for="member-id">Mã số thành viên:</label>
+                <input type="text" id="member-id" name="memberId" required>
+            </div>
+            <button type="submit">Xác nhận mượn</button>
+        </form>
+
+        <div id="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('bookId');
+        const bookData = {
+            '101': 'Lập trình C++ Nâng cao',
+            '102': 'Cấu trúc dữ liệu và Giải thuật',
+            '103': 'Thiết kế hệ thống cơ bản',
+            '104': 'OOP với C++'
+        };
+        const bookTitleElement = document.getElementById('book-title');
+        bookTitleElement.textContent = bookData[bookId] || 'Sách không xác định';
+        const borrowForm = document.getElementById('borrow-form');
+        const resultDiv = document.getElementById('result');
+
+        borrowForm.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const memberName = document.getElementById('member-name').value;
+            const memberId = document.getElementById('member-id').value;
+
+            const dataToSend = {
+                bookId: bookId,
+                memberName: memberName,
+                memberId: memberId
+            };
+
+            fetch('/borrow-book', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSend)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Loi Server: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Phan hoi tu server:', data);
+                
+                if(data.success) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <p><strong>Mượn sách thành công!</strong></p>
+                        <p><strong>Thành viên:</strong> ${data.memberName}</p>
+                        <p><strong>Sách đã mượn:</strong> ${bookData[data.bookId]}</p>
+                        <p><strong>Ngày hẹn trả:</strong> ${data.dueDate}</p>
+                        <p><strong>Phí mượn:</strong> ${data.feeFormatted}</p>
+                    `;
+                    borrowForm.style.display = 'none';
+                } else {
+                    throw new Error(data.message || 'Loi khong xac dinh tu server');
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `<p><strong>Đã xảy ra lỗi:</strong> ${error.message}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
