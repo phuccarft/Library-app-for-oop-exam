@@ -4,10 +4,9 @@
 void Catalog::addBook(const Book& book) {
     books.push_back(book);
 }
-
 Book* Catalog::findBookByIsbn(const std::string& isbn) {
     for (auto& book : books) { 
-        if (book.getIsbn() == isbn) {
+        if (book.getIsbn() == isbn) { // ISBN trong Book.h đóng vai trò là ID
             return &book; 
         }
     }

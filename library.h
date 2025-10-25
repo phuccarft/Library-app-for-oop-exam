@@ -7,9 +7,10 @@
 #include <iostream>
 #include "nlohmann/json.hpp"
 #include "member.h"
-#include "student.h"
-#include "teacher.h"
+#include "Student.h"
+#include "Teacher.h" 
 #include "Catalog.h"
+#include "Loan.h" 
 
 using json = nlohmann::json;
 
@@ -17,17 +18,24 @@ class Library {
 private:
     std::vector<Member*> members;
     std::string members_filename;
+    std::vector<Loan*> activeLoans;
+    Catalog catalog;
 public:
-    Library() : members_filename("members.json") {}
-    ~Library() {
-        for (Member* m : members) {
-            delete m;
-        }
-    }
+
+    Library(); // <-- Constructor để khởi tạo Catalog
+    ~Library();
+    Member* findMemberByCredentials(const std::string& id, const std::string& email) const;
+    void clearAllMembers();
     void loadMembers();
-    void saveMembers() const;
+    void saveMembers() const; 
     Member* findMemberByID(const std::string& id) const;
-    void addMember(const std::string& name, const std::string& id, const std::string& email, const std::string& type);
+    void addMember(const std::string& name, const std::string& id, const std::string& email, const std::string& type); 
+
+    // Các hàm quản lý Loan
+    void loadLoans(); 
+    void saveLoans() const;
+    Loan* borrowBook(const std::string& bookIsbn, const std::string& memberId);
+
 };
 
 #endif

@@ -6,32 +6,39 @@
     <title>Book Borrowing Form</title>
     <link rel="stylesheet" href="style.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
 </head>
 <body class="borrow-page">
 
     <div class="borrow-page-wrapper">
         
-        <div class="borrow-card">
+       <div class="borrow-card">
             
-            <div class="card-left">
-                <h3 id="book-title">Đang tải tên sách...</h3>
-            </div>
+            <div class="card-left"></div> 
             
             <div class="card-right">
+                <h3 id="book-title">Đang tải tên sách...</h3> 
+                
                 <h1>BOOK BORROWING FORM</h1>
             
                 <form id="borrow-form">
+                    
                     <div>
                         <label for="member-name">Full name:</label>
-                        <input type="text" id="member-name" name="memberName" placeholder="Enter your full name..." required>
+                        <input type="text" id="member-name" name="memberName" 
+                            placeholder="Enter your full name..." required>
                     </div>
+                    
                     <div>
                         <label for="member-id">ID:</label>
-                        <input type="text" id="member-id" name="memberId" placeholder="Enter your student/teacher ID..." required>
+                        <input type="text" id="member-id" name="memberId" 
+                            placeholder="Enter your member ID..." required>
                     </div>
+                    
                     <div>
                         <label for="member-email">Email:</label>
-                        <input type="text" id="member-email" name="memberEmail" placeholder="Enter your email..." required>
+                        <input type="text" id="member-email" name="memberEmail" 
+                            placeholder="Enter your registered email..." required>
                     </div>
 
                     <div>
@@ -46,7 +53,6 @@
 
                     <button type="submit">Submit</button>
                 </form>
-
                 <div id="result" style="display:none;"></div>
 
                 <div class="signup-banner">
@@ -77,6 +83,12 @@
 
         borrowForm.addEventListener('submit', function(event) {
             event.preventDefault(); 
+            
+            // Vô hiệu hóa nút Submit khi xử lý
+            const submitButton = borrowForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Đang xử lý...';
+
             const memberName = document.getElementById('member-name').value;
             const memberId = document.getElementById('member-id').value;
             const memberEmail = document.getElementById('member-email').value;
@@ -86,7 +98,7 @@
                 bookId: bookId,
                 memberName: memberName,
                 memberId: memberId,
-                memberEmail: memberEmail,
+                memberEmail: memberEmail, // Đã thêm Email vào dữ liệu gửi
                 memberType: memberType
             };
 
@@ -99,51 +111,94 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Server Error: ${response.statusText}`);
+                    return response.text().then(text => { throw new Error(`Server Error: ${response.statusText} - ${text}`); });
                 }
                 return response.json(); 
             })
             .then(data => {
                 console.log('Server response:', data);
-    
+
                 if(data.success) {
+                    // Kích hoạt lại nút Submit và hiển thị trạng thái
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+
                     resultDiv.style.display = 'block';
                     resultDiv.className = 'success result-clean';
                     const memberTypeText = data.memberType === 'student' ? 'Student' : 'Teacher';
-                    const formattedBorrowFee = new Intl.NumberFormat('vi-VN').format(data.borrowFee);
+                    const borrowFeeValue = parseInt(data.borrowFee); 
+                    const formattedBorrowFee = new Intl.NumberFormat('vi-VN').format(borrowFeeValue);
                     
+                    // Chuẩn bị các tham số cho trang user_page.html
+                    const userParams = new URLSearchParams({
+                        memberName: data.memberName,
+                        memberId: memberId,
+                        memberEmail: memberEmail, // <-- THÊM EMAIL
+                        memberType: data.memberType,
+                        bookTitle: data.bookTitle || bookData[bookId] || 'Unknown Book', // <-- LẤY TÊN SÁCH TỪ SERVER HOẶC DỮ LIỆU CỤC BỘ
+                        bookId: data.bookId,
+                        dueDate: data.dueDate,
+                        borrowFee: data.borrowFee,
+                        lateFeeRate: data.lateFeeRate
+                    });
+                    
+                    // Cấu trúc HTML cho kết quả
                     resultDiv.innerHTML = `
-                        <div class="result-header">
-                            <i class='bx bx-check-circle'></i>
-                            <p class="result-title">SUCCESS! Book Borrowed.</p>
-                        </div>
-                        <div class="result-details">
-                            <p><strong>Member:</strong> ${data.memberName} (${memberTypeText})</p>
-                            <p><strong>Book:</strong> ${bookData[bookId] || 'Unknown Book'}</p>
-                            <hr>
-
-                            <p class="result-due-date">
-                                <strong>DUE DATE: </strong> 
-                                <span class="highlight-date">${data.dueDate}</span> 
-                            </p>
-                            
-                            <p class="fee-line fee-borrow">
-                                <i class='bx bx-coin-stack'></i> 
-                                <strong>Borrow Fee:</strong> 
-                                <span>${formattedBorrowFee} VND</span>
-                            </p>
-                            
-                            <p class="fee-line fee-late">
-                                <i class='bx bx-time-five'></i> 
-                                <strong>Late Fee / Day:</strong> 
-                                <span class="highlight-fee">${data.lateFeeRate} VND</span>
-                            </p>
-                            
-                        </div>
+                    <div class="result-clean success">
                         
-                        <button id="home-button" type="button" class="return-button">
-                            <i class='bx bx-home' ></i> Back to Home
-                        </button>
+                        <div class="status-header">
+                            <i class='bx bx-check-circle'></i>
+                            <p class="status-title">BOOK BORROWED</p>
+                            <p class="status-subtitle">The book is now reserved in your name.</p>
+                        </div>
+
+                        <div class="order-summary-card">
+                            <div class="summary-item">
+                                <span class="summary-label">Member:</span>
+                                <span class="summary-value">${data.memberName} (${memberTypeText})</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Book Title:</span>
+                                <span class="summary-value">${data.bookTitle}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Book ID:</span>
+                                <span class="summary-value">${data.bookId}</span>
+                            </div>
+                        </div>
+
+                        <div class="fee-details-card">
+                            <h2 class="card-title-small">Fee & Return Summary</h2>
+                            
+                            <div class="summary-detail-line">
+                                <span class="detail-label">Borrow Fee:</span>
+                                <span class="detail-value">${formattedBorrowFee} VND</span>
+                            </div>
+                            
+                            <div class="summary-detail-line highlight-date">
+                                <span class="detail-label">DUE DATE:</span>
+                                <span class="detail-value highlight">${data.dueDate}</span>
+                            </div>
+                            
+                            <div class="summary-detail-line">
+                                <span class="detail-label">Late Fee / Day:</span>
+                                <span class="detail-value">${data.lateFeeRate} VND</span>
+                            </div>
+
+                            <p class="status-footer">
+                                Your book is confirmed and due by the highlighted date.
+                            </p>
+                        </div>
+
+                        <div class="result-buttons">
+                            <button id="home-button" type="button" class="return-button home-button">
+                                <i class='bx bx-home' ></i> Back to Home
+                            </button>
+                            <button id="user-page-button" type="button" class="return-button account-button">
+                                <i class='bx bx-user' ></i> Go to My Account
+                            </button>
+                        </div>
+                    </div>
                     `;
                     
                     borrowForm.style.display = 'none';
@@ -151,14 +206,21 @@
                     document.getElementById('home-button').addEventListener('click', () => {
                         window.location.href = '/';
                     });
+                    
+                    document.getElementById('user-page-button').addEventListener('click', () => {
+                        window.location.href = `user_page.html?${userParams.toString()}`;
+                    });
+                    
                 } else {
                     throw new Error(data.message || 'Unknown error from server');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit';
                 resultDiv.style.display = 'block';
-                resultDiv.className = 'error';
+                resultDiv.className = 'error result-clean';
                 resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
             });
         });

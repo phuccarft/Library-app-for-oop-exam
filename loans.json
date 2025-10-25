@@ -1,0 +1,9 @@
+[
+    {
+        "bookIsbn": "101",
+        "borrowDate": 1761363064,
+        "dueDate": 1762572664,
+        "isReturned": false,
+        "memberId": "test1"
+    }
+]
