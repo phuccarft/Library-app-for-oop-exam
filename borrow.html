@@ -6,224 +6,267 @@
     <title>Book Borrowing Form</title>
     <link rel="stylesheet" href="style.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap&subset=vietnamese" rel="stylesheet">
 </head>
 <body class="borrow-page">
-
     <div class="borrow-page-wrapper">
-        
-       <div class="borrow-card">
-            
-            <div class="card-left"></div> 
-            
+        <div class="borrow-card">
+            <div class="card-left"></div>
             <div class="card-right">
-                <h3 id="book-title">Đang tải tên sách...</h3> 
-                
+                <h3 id="book-title">Đang tải tên sách...</h3>
                 <h1>BOOK BORROWING FORM</h1>
-            
+                
                 <form id="borrow-form">
-                    
                     <div>
                         <label for="member-name">Full name:</label>
-                        <input type="text" id="member-name" name="memberName" 
-                            placeholder="Enter your full name..." required>
+                        <input type="text" id="member-name" name="memberName" placeholder="Enter your full name..." required>
                     </div>
-                    
                     <div>
                         <label for="member-id">ID:</label>
-                        <input type="text" id="member-id" name="memberId" 
-                            placeholder="Enter your member ID..." required>
+                        <input type="text" id="member-id" name="memberId" placeholder="Enter your member ID..." required>
                     </div>
-                    
                     <div>
                         <label for="member-email">Email:</label>
-                        <input type="text" id="member-email" name="memberEmail" 
-                            placeholder="Enter your registered email..." required>
+                        <input type="text" id="member-email" name="memberEmail" placeholder="Enter your registered email..." required>
                     </div>
-
                     <div>
                         <label>Member type:</label>
                         <div class="radio-group">
                             <input type="radio" id="member-student" name="memberType" value="student" checked>
-                            <label for="member-student">Student</label>
+                            <label for="member-student">Sinh viên</label>
                             <input type="radio" id="member-teacher" name="memberType" value="teacher">
-                            <label for="member-teacher">Teacher</label>
+                            <label for="member-teacher">Giáo viên</label>
                         </div>
                     </div>
-
-                    <button type="submit">Submit</button>
+                    <button type="submit">Xác nhận</button>
                 </form>
+
                 <div id="result" style="display:none;"></div>
 
-                <div class="signup-banner">
-                    Already have an account? <a href="#">Log in</a>
-                </div>
+            
             </div>
         </div>
     </div>
 
+    <script src="session.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const bookId = urlParams.get('bookId');
-        const bookData = {
-            '101': 'Lập trình C++ Nâng cao',
-            '102': 'Cấu trúc dữ liệu và Giải thuật',
-            '103': 'Thiết kế hệ thống cơ bản',
-            '104': 'OOP với C++',
-            '105': 'Một cuốn sách có tên rất dài',
-            '106': 'Sách 6'
+        const bookData = { // This is just a fallback [cite: 66]
+            '101': 'Lập trình C++ Nâng cao', '102': 'Cấu trúc dữ liệu và Giải thuật',
+            '103': 'Thiết kế hệ thống căn bản', '104': 'OOP với C++',
+            '105': 'Một cuốn sách có tên rất dài', '106': 'Sách 6'
         };
+
         const bookTitleElement = document.getElementById('book-title');
-        
         const title = bookData[bookId] || 'Sách không xác định';
-        bookTitleElement.textContent = title;
+        bookTitleElement.textContent = title; // Set initial title [cite: 67]
 
         const borrowForm = document.getElementById('borrow-form');
         const resultDiv = document.getElementById('result');
+        const submitButton = borrowForm.querySelector('button[type="submit"]');
 
-        borrowForm.addEventListener('submit', function(event) {
-            event.preventDefault(); 
-            
-            // Vô hiệu hóa nút Submit khi xử lý
-            const submitButton = borrowForm.querySelector('button[type="submit"]');
+        let confirmedDataToSend = {};
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = Auth.getUser(); // Use Auth.getUser() from session.js
+            if (user) {
+                document.getElementById('member-name').value = user.name;
+                document.getElementById('member-id').value = user.id;
+                document.getElementById('member-email').value = user.email;
+                if (user.type === 'student') {
+                    document.getElementById('member-student').checked = true;
+                } else if (user.type === 'teacher') {
+                    document.getElementById('member-teacher').checked = true;
+                }
+                document.getElementById('member-id').readOnly = true;
+                document.getElementById('member-id').style.backgroundColor = '#eee';
+            }
+        });
+        borrowForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
             submitButton.disabled = true;
-            submitButton.textContent = 'Đang xử lý...';
+            submitButton.textContent = 'đang kiểm tra...';
 
-            const memberName = document.getElementById('member-name').value;
-            const memberId = document.getElementById('member-id').value;
-            const memberEmail = document.getElementById('member-email').value;
-            const memberType = document.querySelector('input[name="memberType"]:checked').value;
-            
-            const dataToSend = {
+            // Store data in the global variable
+            confirmedDataToSend = {
                 bookId: bookId,
-                memberName: memberName,
-                memberId: memberId,
-                memberEmail: memberEmail, // Đã thêm Email vào dữ liệu gửi
-                memberType: memberType
+                memberName: document.getElementById('member-name').value,
+                memberId: document.getElementById('member-id').value,
+                memberEmail: document.getElementById('member-email').value,
+                memberType: document.querySelector('input[name="memberType"]:checked').value
             };
 
-            fetch('/borrow-book', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dataToSend)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(`Server Error: ${response.statusText} - ${text}`); });
-                }
-                return response.json(); 
-            })
-            .then(data => {
-                console.log('Server response:', data);
+            try {
+                // Call the NEW preview endpoint
+                const response = await fetch('/get-borrow-preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(confirmedDataToSend)
+                });
 
-                if(data.success) {
-                    // Kích hoạt lại nút Submit và hiển thị trạng thái
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Không thể lấy chi tiết mượn sách.');
+                }
+
+                // SUCCESS: Show confirmation details
+                borrowForm.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result-clean'; // Use neutral style
+                
+                const formattedBorrowFee = new Intl.NumberFormat('vi-VN').format(data.borrowFee);
+                const formattedLateFee = new Intl.NumberFormat('vi-VN').format(data.lateFeeRate);
+
+                // Update book title with the one from server
+                bookTitleElement.textContent = data.bookTitle;
+
+                resultDiv.innerHTML = `
+                    <div class="status-header">
+                        <i class='bx bx-help-circle' style="color: var(--primary-color);"></i>
+                        <p class="status-title">XÁC NHẬN MƯỢN SÁCH</p>
+                    </div>
+                    <div class="order-summary-card">
+                        <div class="summary-item">
+                            <span class="summary-label">Thành viên:</span>
+                            <span class="summary-value">${confirmedDataToSend.memberName}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Sách mượn:</span>
+                            <span class="summary-value">${data.bookTitle}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Tình trạng:</span>
+                            <span class="summary-value" style="color: var(--success-color);">${data.availability}</span>
+                        </div>
+                    </div>
+                    <div class="fee-details-card">
+                        <h2 class="card-title-small">Chi tiết Phí</h2>
+                        <div class="summary-detail-line">
+                            <span class="detail-label">Phí mượn sách:</span>
+                            <span class="detail-value">${formattedBorrowFee} VND</span>
+                        </div>
+                        <div class="summary-detail-line">
+                            <span class="detail-label">Phí trả trễ / ngày:</span>
+                            <span class="detail-value">${formattedLateFee} VND</span>
+                        </div>
+                        <div class="pay-check">
+                            <span class="detail-label">Tổng tiền:</span>
+                            <span class="detail-value highlight">${data.dueDate}</span>
+                    </div>
+                    <div class="result-buttons">
+                        <button id="cancel-borrow-btn" type="button" class="return-button home-button" style="background-color: #777;">
+                            Huy
+                        </button>
+                        <button id="confirm-borrow-btn" type="button" class="return-button account-button">
+                            <i class='bx bx-check-circle'></i> Xác nhận mượn
+                        </button>
+                    </div>
+                `;
+
+                // Add event listeners for the new buttons
+                document.getElementById('confirm-borrow-btn').addEventListener('click', handleConfirmBorrow);
+                document.getElementById('cancel-borrow-btn').addEventListener('click', () => {
+                    // Reset form
+                    borrowForm.style.display = 'block';
+                    resultDiv.style.display = 'none';
                     submitButton.disabled = false;
                     submitButton.textContent = 'Submit';
+                });
 
-                    resultDiv.style.display = 'block';
-                    resultDiv.className = 'success result-clean';
-                    const memberTypeText = data.memberType === 'student' ? 'Student' : 'Teacher';
-                    const borrowFeeValue = parseInt(data.borrowFee); 
-                    const formattedBorrowFee = new Intl.NumberFormat('vi-VN').format(borrowFeeValue);
-                    
-                    // Chuẩn bị các tham số cho trang user_page.html
-                    const userParams = new URLSearchParams({
-                        memberName: data.memberName,
-                        memberId: memberId,
-                        memberEmail: memberEmail, // <-- THÊM EMAIL
-                        memberType: data.memberType,
-                        bookTitle: data.bookTitle || bookData[bookId] || 'Unknown Book', // <-- LẤY TÊN SÁCH TỪ SERVER HOẶC DỮ LIỆU CỤC BỘ
-                        bookId: data.bookId,
-                        dueDate: data.dueDate,
-                        borrowFee: data.borrowFee,
-                        lateFeeRate: data.lateFeeRate
-                    });
-                    
-                    // Cấu trúc HTML cho kết quả
-                    resultDiv.innerHTML = `
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        async function handleConfirmBorrow() {
+            const confirmButton = document.getElementById('confirm-borrow-btn');
+            if(confirmButton) confirmButton.disabled = true;
+            resultDiv.innerHTML = `<p style="text-align: center;">Processing your request... <i class='bx bx-loader-alt bx-spin'></i></p>`;
+
+            try {
+                // Call the ORIGINAL /borrow-book endpoint
+                const response = await fetch('/borrow-book', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(confirmedDataToSend)
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Lỗi khi xác nhận mượn sách.');
+                }
+                resultDiv.className = 'success result-clean';
+                const memberTypeText = data.memberType === 'student' ? 'Student' : 'Teacher';
+                const formattedBorrowFee = new Intl.NumberFormat('vi-VN').format(data.borrowFee);
+                const userParams = new URLSearchParams({
+                    memberName: data.memberName,
+                    memberId: data.memberId,
+                    memberEmail: confirmedDataToSend.memberEmail, // Use email from stored data
+                    memberType: data.memberType,
+                    bookTitle: data.bookTitle || bookData[bookId] || 'Unknown Book',
+                    bookId: data.bookId, // IMPORTANT: Pass bookId
+                    dueDate: data.dueDate,
+                    borrowFee: data.borrowFee,
+                    lateFeeRate: data.lateFeeRate
+                });
+
+                resultDiv.innerHTML = `
                     <div class="result-clean success">
-                        
                         <div class="status-header">
                             <i class='bx bx-check-circle'></i>
-                            <p class="status-title">BOOK BORROWED</p>
-                            <p class="status-subtitle">The book is now reserved in your name.</p>
+                            <p class="status-title">SÁCH ĐÃ MƯỢN</p>
                         </div>
-
                         <div class="order-summary-card">
                             <div class="summary-item">
-                                <span class="summary-label">Member:</span>
+                                <span class="summary-label">Thành viên:</span>
                                 <span class="summary-value">${data.memberName} (${memberTypeText})</span>
                             </div>
                             <div class="summary-item">
-                                <span class="summary-label">Book Title:</span>
+                                <span class="summary-label">Tên sách:</span>
                                 <span class="summary-value">${data.bookTitle}</span>
                             </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Book ID:</span>
-                                <span class="summary-value">${data.bookId}</span>
-                            </div>
                         </div>
-
                         <div class="fee-details-card">
                             <h2 class="card-title-small">Fee & Return Summary</h2>
-                            
                             <div class="summary-detail-line">
-                                <span class="detail-label">Borrow Fee:</span>
+                                <span class="detail-label">Phí mượn:</span>
                                 <span class="detail-value">${formattedBorrowFee} VND</span>
                             </div>
-                            
                             <div class="summary-detail-line highlight-date">
-                                <span class="detail-label">DUE DATE:</span>
+                                <span class="detail-label">Ngày hẹn trả:</span>
                                 <span class="detail-value highlight">${data.dueDate}</span>
                             </div>
-                            
-                            <div class="summary-detail-line">
-                                <span class="detail-label">Late Fee / Day:</span>
-                                <span class="detail-value">${data.lateFeeRate} VND</span>
-                            </div>
-
-                            <p class="status-footer">
-                                Your book is confirmed and due by the highlighted date.
-                            </p>
                         </div>
-
                         <div class="result-buttons">
                             <button id="home-button" type="button" class="return-button home-button">
-                                <i class='bx bx-home' ></i> Back to Home
+                                <i class='bx bx-home'></i> Quay về Trang chủ
                             </button>
                             <button id="user-page-button" type="button" class="return-button account-button">
-                                <i class='bx bx-user' ></i> Go to My Account
+                                <i class='bx bx-user'></i> Tới trang cá nhân
                             </button>
                         </div>
                     </div>
-                    `;
-                    
-                    borrowForm.style.display = 'none';
+                `;
+                
+                document.getElementById('home-button').addEventListener('click', () => { window.location.href = '/'; });
+                document.getElementById('user-page-button').addEventListener('click', () => { window.location.href = `user_page.html?${userParams.toString()}`; });
 
-                    document.getElementById('home-button').addEventListener('click', () => {
-                        window.location.href = '/';
-                    });
-                    
-                    document.getElementById('user-page-button').addEventListener('click', () => {
-                        window.location.href = `user_page.html?${userParams.toString()}`;
-                    });
-                    
-                } else {
-                    throw new Error(data.message || 'Unknown error from server');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+            } catch (error) {
+                showError(error.message);
+                // Show the form again on final error
+                borrowForm.style.display = 'block';
                 submitButton.disabled = false;
                 submitButton.textContent = 'Submit';
-                resultDiv.style.display = 'block';
-                resultDiv.className = 'error result-clean';
-                resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
-            });
-        });
+            }
+        }
+
+        function showError(message) {
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'error result-clean';
+            resultDiv.innerHTML = `<p><strong>Error:</strong> ${message}</p>`;
+            submitButton.disabled = false;
+            submitButton.textContent = 'Submit';
+        }
     </script>
 </body>
 </html>

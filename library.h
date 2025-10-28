@@ -35,7 +35,10 @@ public:
     void loadLoans(); 
     void saveLoans() const;
     Loan* borrowBook(const std::string& bookIsbn, const std::string& memberId);
-
+    Book* findBookByIsbn(const std::string& isbn);
+    bool returnBook(const std::string& memberId, const std::string& bookIsbn);
+    std::vector<Book> getAllBooks() const;
+    json getActiveLoansByMember(const std::string& memberId) const;
 };
 
 #endif

@@ -11,8 +11,7 @@
             --primary-color: #009688;     
             --success-color: #4CAF50;
             --highlight-orange: #FF7F50;
-        }
-        
+        }  
         body.login-page {
             background: linear-gradient(135deg, var(--primary-color), var(--highlight-orange));
             display: flex;
@@ -32,6 +31,7 @@
             padding: 50px; 
             box-sizing: border-box;
         }
+        
         .illustration-side {
             flex: 1;
             display: flex;
@@ -40,10 +40,12 @@
             position: relative;
             padding-right: 40px;
         }
+        
         .login-side {
             flex: 1;
             padding-left: 20px;
         }
+
         .member-login-title {
             font-size: 1.8em; 
             font-weight: 900;
@@ -60,7 +62,7 @@
             display: flex;
             align-items: center;
             border: 1px solid #ccc;
-            border-radius: 8px;
+            border-radius: 8px; 
             padding: 8px 15px;
             background-color: #f7f7f7;
             transition: border-color 0.2s;
@@ -101,11 +103,12 @@
         #login-button:hover {
             background-color: var(--primary-hover);
         }
+        
         .abstract-illustration {
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            border: 2px solid var(--primary-color);
+            border: 2px solid var(--primary-color); 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -119,6 +122,9 @@
         .login-links { margin-top: 25px; font-size: 0.9em; text-align: center; }
         .login-links a { color: var(--primary-color); text-decoration: none; transition: color 0.2s; }
         .login-links a:hover { color: var(--primary-hover); }
+
+        .feedback-message.error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 10px; margin-top: 10px; border-radius: 4px; }
+        .feedback-message.success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 10px; margin-top: 10px; border-radius: 4px; }
     </style>
 </head>
 <body class="login-page">
@@ -132,12 +138,11 @@
         </div>
         
         <div class="login-side">
-            <h2 class="member-login-title">Member Login</h2>
+            <h2 class="member-login-title">Đăng Nhập</h2>
             
             <form id="login-form">
                 
                 <div class="form-group-login">
-                    <label style="display:none;">Email:</label>
                     <div class="login-input-group">
                         <i class='bx bx-envelope'></i>
                         <input type="email" id="login-email" name="email" class="login-input" placeholder="Email" required>
@@ -145,7 +150,6 @@
                 </div>
                 
                 <div class="form-group-login">
-                    <label style="display:none;">ID:</label>
                     <div class="login-input-group">
                          <i class='bx bx-id-card'></i>
                         <input type="text" id="login-id" name="memberId" class="login-input" placeholder="ID / Mã thành viên" required>
@@ -153,23 +157,23 @@
                 </div>
 
                 <button type="submit" id="login-button">
-                    LOGIN
+                    Đăng Nhập
                 </button>
             </form>
 
             <div id="login-feedback" class="feedback-message" style="display:none;"></div>
             
             <div class="login-links">
-                <a href="#">Forgot Username / Password?</a>
+                <a href="#">Quên tài khoản / Mật khẩu?</a>
                 <p style="margin-top: 10px;">
-                    <a href="#">Create your Account →</a>
+                    <a href="#">Tạo tài khoản →</a>
                 </p>
             </div>
         </div>
         
     </div>
 
-    <script src="login.js"></script>
-
+    <script src="session.js"></script>
+    <script src="auth.js"></script>
 </body>
 </html>

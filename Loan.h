@@ -21,7 +21,7 @@ public:
         using namespace std::chrono_literals; 
         // 14 ngày mượn sách
         dueDate = borrowDate + (14 * 24h); 
-        book->setAvailable(false); // Cập nhật trạng thái sách
+        book->borrowCopy();
     }
     
     std::string getDueDateString() const;
@@ -29,7 +29,7 @@ public:
 
     void returnBook() {
         isReturned = true;
-        book->setAvailable(true);
+        book->returnCopy();
     }
     int getDaysLate() const; // Tính ngày trả trễ (để tính phí)
 };

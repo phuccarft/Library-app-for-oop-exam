@@ -9,9 +9,13 @@ public:
     void addBook(const Book& book); 
     Book* findBookByIsbn(const std::string& isbn); 
     void displayAllBooks() const; 
+    std::vector<Book> getAllBooks() const {
+        return books;
+    }
+    
     Catalog() {}  
     ~Catalog() {} 
-
+    
 
 private:
     std::vector<Book> books; 

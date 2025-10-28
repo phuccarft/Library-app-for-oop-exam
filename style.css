@@ -1,6 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=FAMILY_NAME:wght@WEIGHT_OR_RANGE&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap&subset=vietnamese');
 :root {
     --primary-color: #009688;     
     --primary-hover: #00796B;     
@@ -22,7 +20,7 @@
 }
 
 body {
-    font-family: 'Lato', Arial, sans-serif;
+    font-family: 'Montserrat', Arial, sans-serif;
     background-color: var(--bg-main);
     margin: 0;
     padding: 0;
@@ -242,48 +240,55 @@ h1, h2, h3 {
     gap: 30px;
 }
 .book-item {
-    border-radius: 8px;
+    background-color: #ffffff;
+    border-radius: 12px;       
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    display: flex;
-    background-color: #fff;
+    overflow: hidden;         
 }
 .book-item:hover {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
     transform: translateY(-8px) scale(1.02);
 }
 .book-item a {
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    text-align: center;
-    padding: 20px;
+    display: block; 
+    padding: 0;      
+    min-height: 0;  
+    text-align: left; 
     text-decoration: none;
-    font-size: 1.2em;
-    font-weight: bold;
-    min-height: 300px; 
-    border-radius: 8px;
-    border-bottom: 5px solid; 
+    color: var(--text-primary);
+    border-bottom: none;
 }
-.book-item:nth-child(4n+1) a {
-    background-color: #e0f7fa; 
-    color: #00796B;
-}
-.book-item:nth-child(4n+2) a {
-    background-color: #fbe9e7; 
-    color: #d84315;
-}
-.book-item:nth-child(4n+3) a {
-    background-color: #e8eaf6; 
-    color: #303f9f;
-}
+.book-item:nth-child(4n+1) a,
+.book-item:nth-child(4n+2) a,
+.book-item:nth-child(4n+3) a,
 .book-item:nth-child(4n+4) a {
-    background-color: #fffde7; 
-    color: #f57f17;
+    background-color: transparent;
+    color: var(--text-primary);
+}
+.book-cover-placeholder {
+    width: 100%;
+    aspect-ratio: 2 / 3; 
+    background-color: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.book-cover-placeholder .bx {
+    font-size: 5em;
+    color: #a0b0c0; 
+}
+.book-info {
+    padding: 12px 16px 16px 16px;
+}
+.book-title {
+    font-family: 'Montserrat', Arial, sans-serif;
+    font-size: 1.1em;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .book-catalog-section h2, .book-catalog-section p { text-align: center; }
 body.borrow-page {
@@ -703,4 +708,108 @@ body.borrow-page {
 }
 .avatar-container-small img { 
     display: none; 
+}
+.feedback-message {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    text-align: center;
+}
+
+.feedback-message.success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.feedback-message.error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+.book-author {
+    font-family: 'Monserrat', sans-serif;
+    font-size: 0.9em;
+    color: #555;
+    margin: 0;
+}
+
+.book-status {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.book-status {
+    display: none;
+}
+.status-available {
+    background-color: var(--success-color, #4CAF50);
+    color: white;
+}
+
+.status-unavailable {
+    background-color: #aaa;
+    color: #fff;
+}
+
+.book-item a.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #fafafa;
+}
+
+.book-item a.disabled:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.book-item a.disabled .book-status {
+    background-color: #ccc;
+    color: #555;
+}
+
+.book-item a.disabled .book-author {
+    color: #999;
+}
+
+.book-item a {
+    justify-content: space-between !important; 
+    padding: 25px;
+    position: relative;
+}
+
+
+.status-available {
+    background-color: var(--success-color, #4CAF50);
+    color: white;
+}
+
+.status-unavailable {
+    background-color: #aaa;
+    color: #fff;
+}
+
+.book-item a.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f0f0f0 !important; 
+    color: #999 !important;
+    border-color: #ddd !important;
+}
+
+.book-item a.disabled:hover {
+    transform: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.book-item a.disabled .book-status {
+    background-color: #ccc;
+    color: #555;
 }

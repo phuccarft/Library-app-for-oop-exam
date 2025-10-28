@@ -21,6 +21,7 @@ std::string Loan::getDueDateString() const {
 json Loan::to_json() const {
     json j;
     j["bookIsbn"] = book->getIsbn();
+    j["bookTitle"] = book->getTitle();
     j["memberId"] = member->getId();
     // Lưu thời gian dưới dạng timestamp
     j["borrowDate"] = std::chrono::system_clock::to_time_t(borrowDate);
