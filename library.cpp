@@ -2,17 +2,16 @@
 #include <iomanip>
 #include <iostream> 
 #include <fstream> 
+#include "book.h"
 using namespace std; 
 
-// Triển khai constructor để khởi tạo Catalog và load data (từ bước trước)
 Library::Library() : members_filename("members.json") {
-    // Tái tạo books_data gốc của bạn và thêm vào Catalog
-    catalog.addBook(Book("Lập trình C++ Nâng cao", "Khoa CNTT", "101"));
-    catalog.addBook(Book("Cấu trúc dữ liệu và Giải thuật", "Khoa CNTT", "102"));
-    catalog.addBook(Book("Thiết kế hệ thống cơ bản", "Khoa CNTT", "103"));
-    catalog.addBook(Book("OOP với C++", "Khoa CNTT", "104"));
-    catalog.addBook(Book("Một cuốn sách có tên rất dài", "Tác giả X", "105"));
-    catalog.addBook(Book("Sách 6", "Tác giả Y", "106"));
+    catalog.addBook(Book("Lập trình C++ Nâng cao", "Khoa CNTT", "101", 5, "bx-code-alt"));
+    catalog.addBook(Book("Cấu trúc dữ liệu và Giải thuật", "Khoa CNTT", "102", 5, "bx-sitemap"));
+    catalog.addBook(Book("Thiết kế hệ thống cơ bản", "Khoa CNTT", "103", 3, "bx-server"));
+    catalog.addBook(Book("OOP với C++", "Khoa CNTT", "104", 5, "bx-atom"));
+    catalog.addBook(Book("Một cuốn sách có tên rất dài", "Anh Khoi", "105", 1, "bx-book-reader"));
+    catalog.addBook(Book("Sách 6", "Anh Khoi", "106", 4, "bx-book-open"));
 }
 
 Library::~Library() {
@@ -143,12 +142,46 @@ void Library::clearAllMembers() {
 
 Member* Library::findMemberByCredentials(const std::string& id, const std::string& email) const {
     for (Member* m : members) {
-        // Kiểm tra cả ID và Email khớp nhau
-        if (m && m->getId() == id) {
-             if (m && m->getId() == id) { 
-                 return m; 
-             }
+        if (m && m->getId() == id && m->getEmail() == email) {
+            return m;
         }
     }
     return nullptr;
+}
+std::vector<Book> Library::getAllBooks() const {
+    return catalog.getAllBooks();
+}
+bool Library::returnBook(const std::string& memberId, const std::string& bookIsbn) {
+    bool foundAndReturned = false;
+    for (Loan* loan : activeLoans) {
+        if (loan && !loan->isReturned && loan->member->getId() == memberId && loan->book->getIsbn() == bookIsbn) {
+            
+            loan->returnBook();
+            
+            std::cout << "[Logic] Da tra sach: " << bookIsbn 
+                      << " boi TV: " << memberId << "\n";
+            
+            foundAndReturned = true;
+            break;
+        }
+    }
+    if (foundAndReturned) {
+        saveLoans();
+    } else {
+        std::cerr << "[Logic Error] Khong tim thay giao dich muon (chua tra) cho TV: " 
+                  << memberId << " va Sach: " << bookIsbn << "\n";
+    }
+    return foundAndReturned;
+}
+Book* Library::findBookByIsbn(const std::string& isbn) {
+    return catalog.findBookByIsbn(isbn);
+}
+json Library::getActiveLoansByMember(const std::string& memberId) const {
+    json memberLoans = json::array();
+    for (const Loan* loan : activeLoans) {
+        if (loan && !loan->isReturned && loan->member->getId() == memberId) {
+            memberLoans.push_back(loan->to_json());
+        }
+    }
+    return memberLoans;
 }

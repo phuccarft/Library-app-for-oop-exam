@@ -4,5 +4,11 @@
         "id": "test1",
         "name": "thanh vien thu nghiem 1",
         "type": "student"
+    },
+    {
+        "email": "anhkhoi@gmail.com",
+        "id": "11247403",
+        "name": "Nguyen Nhat Anh Khoi",
+        "type": "student"
     }
 ]
