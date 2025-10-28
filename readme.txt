@@ -26,4 +26,4 @@ fetch('/admin/clear-members', {
     console.error('Lỗi mạng:', error);
 });
 Lệnh tạo sv nếu cần
-"g++ server_main.cpp library.cpp Student.cpp Teacher.cpp Catalog.cpp Loan.cpp -o my_server.exe -lws2_32 -lssl -lcrypto -pthread -std=c++17"
+"g++ server_main.cpp library.cpp Class/Student.cpp Class/Teacher.cpp Class/Catalog.cpp Class/Loan.cpp -o my_server.exe -lws2_32 -lssl -lcrypto -pthread -std=c++17 -IClass -I."
